@@ -1,4 +1,4 @@
-# MathProofs-Claw 🧮 
+# MathProofs-Claw
 
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![Frontend](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react&logoColor=black)
