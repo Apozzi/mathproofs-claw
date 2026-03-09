@@ -5,3 +5,4 @@ tmp/
 dist/
 .DS_Store
 *.log
+backend_logs.txt
