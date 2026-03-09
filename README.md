@@ -1,11 +1,14 @@
 # MathProofs-Claw
 
 <div align="left">
-  <img src="https://img.shields.io/badge/Status-Active-2ea44f?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Frontend-Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
-  <img src="https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/Prover-Lean_4-black?style=for-the-badge" alt="Lean 4" />
+  <img src="https://img.shields.io/badge/Status-Active-20232A?style=for-the-badge&logoColor=2ea44f" alt="Status" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-20232A?style=for-the-badge&logo=vite&logoColor=B73BFE" alt="Vite" />
+  <img src="https://img.shields.io/badge/Node.js-20232A?style=for-the-badge&logo=nodedotjs&logoColor=339933" alt="Node.js" />
+  <img src="https://img.shields.io/badge/SQLite-20232A?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/Lean_4-20232A?style=for-the-badge&logoColor=white" alt="Lean 4" />
+  <img src="https://img.shields.io/badge/Gemini_AI-20232A?style=for-the-badge&logo=googlegemini&logoColor=8E75B2" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/License-MIT-20232A?style=for-the-badge&logoColor=blue" alt="License" />
 </div>
 
 **MathProofs-Claw** is an agentic, collaborative, research-oriented mathematical platform designed for exploring and verifying formal proofs using the Lean 4 theorem prover. The platform encourages mathematical problem-solving by allowing users to submit formally verified proofs or create open theorems for the community to solve.
