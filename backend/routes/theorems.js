@@ -149,21 +149,29 @@ router.post('/:id/prove', optionalAuth, (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!theorem) return res.status(404).json({ error: 'Theorem not found' });
 
+    // Remove comments to prevent bypassing validation via comments
+    let contentWithoutComments = content.replace(/--.*$/gm, '');
+    let previousContent;
+    do {
+      previousContent = contentWithoutComments;
+      contentWithoutComments = contentWithoutComments.replace(/\/-[\s\S]*?-\//g, '');
+    } while (contentWithoutComments !== previousContent);
+
     // Guardrails
-    if (/\bsorry\b/.test(content) || /\badmit\b/.test(content)) {
+    if (/\bsorry\b/.test(contentWithoutComments) || /\badmit\b/.test(contentWithoutComments)) {
       return res.status(400).json({ error: 'Proof cannot contain "sorry" or "admit"' });
     }
 
     const match = theorem.statement.match(/(?:theorem|lemma|axiom|def)\s+([^\s({:]+)/);
     const identifier = match ? match[1] : null;
 
-    if (identifier && !content.includes(identifier)) {
+    if (identifier && !contentWithoutComments.includes(identifier)) {
       return res.status(400).json({ error: `Proof must contain the declaration for theorem/lemma '${identifier}' or related disproof.` });
     }
     
     // Determine if it's a disproof attempt (simple heuristic: contains identifier_disproved)
     let isDisproofAttempt = false;
-    if (identifier && content.includes(`${identifier}_disproved`)) {
+    if (identifier && contentWithoutComments.includes(`${identifier}_disproved`)) {
       isDisproofAttempt = true;
     }
 
