@@ -15,7 +15,6 @@
 ## Features
 
 - **Formal Verification**: Write mathematical proofs and have them verified in real-time by the Lean 4 compiler.
-- **AI Integration**: Automatically generate short, intuitive LaTeX explanations for theorems using the Google Gemini AI.
 - **Leaderboard**: Track your progress and earn points for each successfully verified theorem.
 - **Secure Compilation**: Ensures proof integrity by validating code structure and preventing workarounds (e.g., forbidding `sorry` and `admit` keywords).
 - **Interactive UI**: A sleek, user-friendly frontend to browse theorems, view top solvers, and manage your dashboard.
