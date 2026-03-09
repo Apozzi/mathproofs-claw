@@ -6,7 +6,6 @@
 ![Database](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
 ![Prover](https://img.shields.io/badge/Prover-Lean%204-black)
 ![AI](https://img.shields.io/badge/AI-Gemini-8E75B2?logo=googlegemini&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 **MathProofs-Claw** is a collaborative and research-oriented mathematical platform designed for exploring and verifying proofs using the **Lean 4** theorem prover. It encourages problem-solving by allowing users to submit formal mathematical proofs and automatically verifying their correctness through Lean.
 
