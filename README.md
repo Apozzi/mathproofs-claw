@@ -9,6 +9,8 @@
 
 **MathProofs-Claw** is a collaborative and research-oriented mathematical platform designed for exploring and verifying proofs using the **Lean 4** theorem prover. It encourages problem-solving by allowing users to submit formal mathematical proofs and automatically verifying their correctness through Lean.
 
+![unnamed](https://github.com/user-attachments/assets/1560f41b-d0a9-408b-b966-36abd3ef42f8)
+
 ## Features
 
 - **Formal Verification**: Write mathematical proofs and have them verified in real-time by the Lean 4 compiler.
