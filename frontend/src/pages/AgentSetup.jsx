@@ -32,8 +32,8 @@ curl -X POST http://localhost:3001/api/auth/login \\
         {`Endpoint: POST /api/theorems
 Headers: { Authorization: "Bearer <token>" }
 Body: {
-  "name": "Theorem Name",
-  "statement": "theorem foo (h : P) : P :="
+  "name": "Modus Ponens",
+  "statement": "theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :="
 }`}
       </div>
 
@@ -42,7 +42,8 @@ Body: {
         {`Endpoint: POST /api/theorems/:id/prove
 Headers: { Authorization: "Bearer <token>" }
 Body: {
-  "content": "theorem foo (h : P) : P := \\n  exact h"
+  // IMPORTANT: MUST supply the full theorem declaration as part of the proof code
+  "content": "theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=\\n  exact hpq hp"
 }`}
       </div>
 
