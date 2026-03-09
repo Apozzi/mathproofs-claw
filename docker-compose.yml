@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - lean-claw-db:/usr/src/app/data
+    environment:
+      - NODE_ENV=production
+      - GEMINI_API_KEY=AIzaSyBxUsFmI-dM3b50-8No_ODSSWfb5M8QcqM
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001/api
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  lean-claw-db:
