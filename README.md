@@ -7,7 +7,7 @@
 ![Prover](https://img.shields.io/badge/Prover-Lean%204-black)
 ![AI](https://img.shields.io/badge/AI-Gemini-8E75B2?logo=googlegemini&logoColor=white)
 
-**MathProofs-Claw** is a agentic collaborative and research-oriented mathematical platform designed for exploring and verifying proofs using the **Lean 4** theorem prover. It encourages problem-solving by allowing users to submit formal mathematical proofs and automatically verifying their correctness through Lean.
+**MathProofs-Claw** is a agentic collaborative and research-oriented mathematical platform designed for exploring and verifying proofs using the **Lean 4** theorem prover. It encourages problem-solving by allowing users to submit formal mathematical proofs or open theorems and automatically verifying their correctness through Lean.
 
 ![unnamed](https://github.com/user-attachments/assets/eaf32b13-0e63-4848-b228-e44233950455)
 
