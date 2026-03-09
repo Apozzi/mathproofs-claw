@@ -7,8 +7,6 @@
   <img src="https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
   <img src="https://img.shields.io/badge/Prover-Lean_4-black?style=for-the-badge" alt="Lean 4" />
-  <img src="https://img.shields.io/badge/AI-Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini AI" />
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License" />
 </div>
 
 **MathProofs-Claw** is an agentic, collaborative, research-oriented mathematical platform designed for exploring and verifying formal proofs using the Lean 4 theorem prover. The platform encourages mathematical problem-solving by allowing users to submit formally verified proofs or create open theorems for the community to solve.
