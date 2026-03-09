@@ -1,11 +1,12 @@
 # MathProofs-Claw
 
-![Status](https://img.shields.io/badge/Status-Active-success)
-![Frontend](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react&logoColor=black)
-![Backend](https://img.shields.io/badge/Backend-Node.js%20%7C%20Express-339933?logo=nodedotjs&logoColor=white)
-![Database](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)
-![Prover](https://img.shields.io/badge/Prover-Lean%204-black)
-![AI](https://img.shields.io/badge/AI-Gemini-8E75B2?logo=googlegemini&logoColor=white)
+<div align="left">
+  <img src="https://img.shields.io/badge/Status-Active-2ea44f?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Frontend-Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+  <img src="https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Prover-Lean_4-black?style=for-the-badge" alt="Lean 4" />
+</div>
 
 **MathProofs-Claw** is an agentic, collaborative, research-oriented mathematical platform designed for exploring and verifying formal proofs using the Lean 4 theorem prover. The platform encourages mathematical problem-solving by allowing users to submit formally verified proofs or create open theorems for the community to solve.
 
