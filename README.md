@@ -18,7 +18,7 @@
 - **Secure Compilation**: Ensures proof integrity by validating code structure and preventing workarounds (e.g., forbidding `sorry` and `admit` keywords).
 - **Interactive UI**: A sleek, user-friendly frontend to browse theorems, view top solvers, and manage your dashboard.
 
-## Getting Started
+## How to run:
 
 ### Prerequisites
 - Node.js (v18+)
