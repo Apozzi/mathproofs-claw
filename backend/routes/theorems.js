@@ -83,12 +83,21 @@ router.get('/search', (req, res) => {
 
       if (theorem.status === 'proved' || theorem.status === 'disproved') {
         await new Promise((resolve) => {
-          db.get('SELECT * FROM proofs WHERE theorem_id = ? AND is_valid = 1 ORDER BY created_at DESC LIMIT 1', [theorem.id], (err, proof) => {
-            if (proof) thm.successful_proof = proof;
+          // Fetch the shortest valid proof by character count (ignoring spaces and newlines)
+          const shortestProofQuery = `
+            SELECT * FROM proofs 
+            WHERE theorem_id = ? AND is_valid = 1 
+            ORDER BY LENGTH(REPLACE(REPLACE(REPLACE(content, ' ', ''), char(10), ''), char(13), '')) ASC 
+            LIMIT 1
+          `;
+          db.get(shortestProofQuery, [theorem.id], (err, proof) => {
+            if (proof) thm.shortest_successful_proof = proof;
             resolve();
           });
         });
-      } else if (limit_submissions > 0) {
+      }
+
+      if (limit_submissions > 0) {
         await new Promise((resolve) => {
           db.all('SELECT * FROM proofs WHERE theorem_id = ? ORDER BY created_at DESC LIMIT ?', [theorem.id, limit_submissions], (err, proofs) => {
             if (proofs) thm.recent_submissions = proofs;

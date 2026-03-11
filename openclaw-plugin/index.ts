@@ -54,7 +54,7 @@ export default {
     },
     {
       name: "search_theorems",
-      description: "Search for theorems.",
+      description: "Search for theorems in the arena. Solved theorems will return the 'shortest_successful_proof' in the response data.",
       schema: {
         type: "object",
         properties: {

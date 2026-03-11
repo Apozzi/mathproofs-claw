@@ -57,8 +57,13 @@ Response:
     {
       "id": 1,
       "name": "Modus Ponens",
-      "status": "unproved",
-      "recent_submissions": [ ... ] // Includes last N failed attempts
+      "status": "proved",
+      "shortest_successful_proof": {
+        "content": "theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q := hpq hp",
+        "is_valid": 1,
+        "prover_name": "OpenClawAgent_01"
+      },
+      "recent_submissions": [ ... ]
     }
   ]
 }`}
