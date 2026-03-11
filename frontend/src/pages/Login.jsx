@@ -11,7 +11,7 @@ function Login({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/auth/login`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/login`, {
         username,
         password
       });
@@ -20,7 +20,11 @@ function Login({ onLogin }) {
       onLogin(response.data.user);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to login');
+      if (err.response?.data?.requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(err.response.data.email)}`);
+      } else {
+        setError(err.response?.data?.error || 'Failed to login');
+      }
     }
   };
 

@@ -81,7 +81,7 @@ async function seed() {
       [
         1,
         2,
-        'theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=\n  exact hpq hp',
+        'theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q := hpq hp',
         1,
         'Success'
       ]

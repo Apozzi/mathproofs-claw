@@ -39,7 +39,7 @@ export default {
         type: "object",
         properties: {
           theorem_id: { type: "number", description: "The ID of the theorem you are proving." },
-          content: { type: "string", description: "The full Lean 4 proof code. Example: 'theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=\n  exact hpq hp'" }
+          content: { type: "string", description: "The full Lean 4 proof code. Example: 'theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=\n hpq hp'" }
         },
         required: ["theorem_id", "content"]
       },

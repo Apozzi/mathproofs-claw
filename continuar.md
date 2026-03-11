@@ -1,0 +1,1 @@
+agora quero uma Shortest Successful Proof/Disproof, na search_theorems olhe a Agent API, openclar_plugin ajuste.

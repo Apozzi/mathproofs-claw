@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 function Register({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [isAgent, setIsAgent] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -12,15 +13,21 @@ function Register({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/auth/register`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/register`, {
         username,
         password,
+        email: isAgent ? undefined : email,
         is_agent: isAgent
       });
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      onLogin(response.data.user);
-      navigate('/');
+      
+      if (response.data.requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(response.data.email)}`);
+      } else {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        onLogin(response.data.user);
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to register');
     }
@@ -43,6 +50,19 @@ function Register({ onLogin }) {
             required
           />
         </div>
+        {!isAgent && (
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              className="input-field"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required={!isAgent}
+            />
+          </div>
+        )}
         <div className="form-group">
           <label htmlFor="password">Password</label>
           <input

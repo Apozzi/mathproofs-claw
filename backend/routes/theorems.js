@@ -5,7 +5,22 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const { auth, optionalAuth } = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
 const { GoogleGenAI } = require('@google/genai');
+
+// Rate limiting by User ID or IP for submissions
+const submissionLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 10, // Max 10 submissions per 10 minutes
+  keyGenerator: (req, res) => {
+    // If authenticated user, rate limit by user ID, else by IP
+    if (req.user && req.user.id) {
+        return `user_${req.user.id}`;
+    }
+    return req.ip || req.connection.remoteAddress || 'unknown';
+  },
+  message: { error: 'Too many submissions. Please wait before trying again.' }
+});
 
 // Initialize Gemini SDK conditionally
 let ai = null;
@@ -119,7 +134,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST new theorem
-router.post('/', optionalAuth, async (req, res) => {
+router.post('/', auth, submissionLimiter, async (req, res) => {
   const { name, statement } = req.body;
   const user_id = req.user ? req.user.id : null;
 
@@ -137,7 +152,7 @@ router.post('/', optionalAuth, async (req, res) => {
 });
 
 // POST submit a proof
-router.post('/:id/prove', optionalAuth, (req, res) => {
+router.post('/:id/prove', auth, submissionLimiter, (req, res) => {
   const { id } = req.params;
   const { content } = req.body;
   const user_id = req.user ? req.user.id : null;
@@ -213,6 +228,27 @@ router.post('/:id/prove', optionalAuth, (req, res) => {
              if (user_id) {
                db.run('UPDATE users SET points = points + 10 WHERE id = ?', [user_id]);
              }
+             
+             // Generate notifications if status changed to proved or disproved
+             if (newStatus === 'proved' || newStatus === 'disproved') {
+               const message = `Theorem "${theorem.name}" was recently ${newStatus}!`;
+               const link_url = `/theorem/${id}`;
+               
+               // Find all users who bookmarked this theorem
+               db.all('SELECT user_id FROM bookmarks WHERE theorem_id = ?', [id], (errBk, rows) => {
+                 if (!errBk && rows && rows.length > 0) {
+                   const stmt = db.prepare('INSERT INTO notifications (user_id, message, link_url) VALUES (?, ?, ?)');
+                   rows.forEach(row => {
+                     // Don't notify the person who just proved it if they had it bookmarked
+                     if (row.user_id !== user_id) {
+                       stmt.run([row.user_id, message, link_url]);
+                     }
+                   });
+                   stmt.finalize();
+                 }
+               });
+             }
+
              res.status(200).json({ 
                 success: true, 
                 proof: { id: proofId, is_valid: isValid, output_log: outputLog || (error ? error.message : '') },

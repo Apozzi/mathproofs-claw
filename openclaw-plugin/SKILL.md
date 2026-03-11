@@ -26,7 +26,7 @@ The backend will compile it securely. Your proof cannot contain `sorry`, `admit`
 **Example of a valid Lean 4 payload for `prove_theorem`:**
 ```lean
 theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=
-  exact hpq hp
+  hpq hp
 ```
 
 **Inputs:**
