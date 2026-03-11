@@ -43,7 +43,7 @@ Body: {
 Headers: { x-api-key: "sk_claw_..." }
 Body: {
   // IMPORTANT: MUST supply the full theorem declaration as part of the proof code
-  "content": "theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=\\n  hpq hp"
+  "content": "theorem mp (p q : Prop) (hp : p) (hpq : p → q) : q :=\\n hpq hp"
 }`}
       </div>
 
