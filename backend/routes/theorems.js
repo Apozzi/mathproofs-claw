@@ -8,21 +8,18 @@ const { auth, optionalAuth } = require('../middleware/auth');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenAI } = require('@google/genai');
 
-// Rate limiting by User ID or IP for submissions
 const submissionLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 10, // Max 10 submissions per 10 minutes
+  windowMs: 10 * 60 * 1000,
+  max: 10,
   keyGenerator: (req, res) => {
-    // If authenticated user, rate limit by user ID, else by IP
     if (req.user && req.user.id) {
-        return `user_${req.user.id}`;
+      return `user_${req.user.id}`;
     }
     return req.ip || req.connection.remoteAddress || 'unknown';
   },
   message: { error: 'Too many submissions. Please wait before trying again.' }
 });
 
-// Initialize Gemini SDK conditionally
 let ai = null;
 if (process.env.GEMINI_API_KEY) {
   ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -68,41 +65,41 @@ router.get('/', (req, res) => {
 router.get('/search', (req, res) => {
   const q = req.query.q || '';
   const limit_submissions = parseInt(req.query.submissions) || 0;
-  
+
   if (!q) {
     return res.status(400).json({ error: 'Search query "q" is required' });
   }
 
   const searchQuery = `%${q}%`;
-  
+
   db.all('SELECT * FROM theorems WHERE name LIKE ? OR statement LIKE ? ORDER BY created_at DESC', [searchQuery, searchQuery], async (err, theorems) => {
     if (err) return res.status(500).json({ error: err.message });
-    
+
     // For each theorem, attach proofs
     const theoremsWithProofs = [];
-    
+
     for (const theorem of theorems) {
       const thm = { ...theorem };
-      
+
       if (theorem.status === 'proved' || theorem.status === 'disproved') {
         await new Promise((resolve) => {
-           db.get('SELECT * FROM proofs WHERE theorem_id = ? AND is_valid = 1 ORDER BY created_at DESC LIMIT 1', [theorem.id], (err, proof) => {
-             if (proof) thm.successful_proof = proof;
-             resolve();
-           });
+          db.get('SELECT * FROM proofs WHERE theorem_id = ? AND is_valid = 1 ORDER BY created_at DESC LIMIT 1', [theorem.id], (err, proof) => {
+            if (proof) thm.successful_proof = proof;
+            resolve();
+          });
         });
       } else if (limit_submissions > 0) {
         await new Promise((resolve) => {
-           db.all('SELECT * FROM proofs WHERE theorem_id = ? ORDER BY created_at DESC LIMIT ?', [theorem.id, limit_submissions], (err, proofs) => {
-             if (proofs) thm.recent_submissions = proofs;
-             resolve();
-           });
+          db.all('SELECT * FROM proofs WHERE theorem_id = ? ORDER BY created_at DESC LIMIT ?', [theorem.id, limit_submissions], (err, proofs) => {
+            if (proofs) thm.recent_submissions = proofs;
+            resolve();
+          });
         });
       }
-      
+
       theoremsWithProofs.push(thm);
     }
-    
+
     res.json({ data: theoremsWithProofs });
   });
 });
@@ -145,7 +142,7 @@ router.post('/', auth, submissionLimiter, async (req, res) => {
   // Generate description using AI
   const description_latex = await generateLatexDescription(name, statement);
 
-  db.run('INSERT INTO theorems (name, statement, description_latex, user_id) VALUES (?, ?, ?, ?)', [name, statement, description_latex, user_id], function(err) {
+  db.run('INSERT INTO theorems (name, statement, description_latex, user_id) VALUES (?, ?, ?, ?)', [name, statement, description_latex, user_id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ id: this.lastID, name, statement, description_latex, status: 'unproved', user_id });
   });
@@ -183,7 +180,7 @@ router.post('/:id/prove', auth, submissionLimiter, (req, res) => {
     if (identifier && !contentWithoutComments.includes(identifier)) {
       return res.status(400).json({ error: `Proof must contain the declaration for theorem/lemma '${identifier}' or related disproof.` });
     }
-    
+
     // Determine if it's a disproof attempt (simple heuristic: contains identifier_disproved)
     let isDisproofAttempt = false;
     if (identifier && contentWithoutComments.includes(`${identifier}_disproved`)) {
@@ -195,7 +192,7 @@ router.post('/:id/prove', auth, submissionLimiter, (req, res) => {
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir);
     }
-    
+
     const fileName = `proof_${Date.now()}.lean`;
     const filePath = path.join(tempDir, fileName);
     fs.writeFileSync(filePath, content);
@@ -206,69 +203,69 @@ router.post('/:id/prove', auth, submissionLimiter, (req, res) => {
       const isValid = !error; // Assuming exit code 0 means success
 
       // Clean up temp file
-      try { fs.unlinkSync(filePath); } catch(e) {}
+      try { fs.unlinkSync(filePath); } catch (e) { }
 
       // Update theorems and insert proof
       let newStatus = isValid ? (isDisproofAttempt ? 'disproved' : 'proved') : 'unproved';
       let isCompilerMissing = error && (error.message.includes('not found') || error.message.includes('not recognized'));
-      
+
       if (isCompilerMissing || !isValid) {
         newStatus = theorem.status; // remain unchanged if invalid or missing compiler
       }
 
-      db.run('INSERT INTO proofs (theorem_id, user_id, content, is_valid, output_log) VALUES (?, ?, ?, ?, ?)', 
-        [id, user_id, content, isValid, outputLog || (error ? error.message : '')], 
-      function(errIn) {
-        if (errIn) return res.status(500).json({ error: errIn.message });
-        const proofId = this.lastID;
+      db.run('INSERT INTO proofs (theorem_id, user_id, content, is_valid, output_log) VALUES (?, ?, ?, ?, ?)',
+        [id, user_id, content, isValid, outputLog || (error ? error.message : '')],
+        function (errIn) {
+          if (errIn) return res.status(500).json({ error: errIn.message });
+          const proofId = this.lastID;
 
-        if (isValid && !isCompilerMissing) {
-          db.run('UPDATE theorems SET status = ? WHERE id = ?', [newStatus, id], (errUp) => {
-             // Award points if we have a user
-             if (user_id) {
-               db.run('UPDATE users SET points = points + 10 WHERE id = ?', [user_id]);
-             }
-             
-             // Generate notifications if status changed to proved or disproved
-             if (newStatus === 'proved' || newStatus === 'disproved') {
-               const message = `Theorem "${theorem.name}" was recently ${newStatus}!`;
-               const link_url = `/theorem/${id}`;
-               
-               // Find all users who bookmarked this theorem
-               db.all('SELECT user_id FROM bookmarks WHERE theorem_id = ?', [id], (errBk, rows) => {
-                 if (!errBk && rows && rows.length > 0) {
-                   const stmt = db.prepare('INSERT INTO notifications (user_id, message, link_url) VALUES (?, ?, ?)');
-                   rows.forEach(row => {
-                     // Don't notify the person who just proved it if they had it bookmarked
-                     if (row.user_id !== user_id) {
-                       stmt.run([row.user_id, message, link_url]);
-                     }
-                   });
-                   stmt.finalize();
-                 }
-               });
-             }
+          if (isValid && !isCompilerMissing) {
+            db.run('UPDATE theorems SET status = ? WHERE id = ?', [newStatus, id], (errUp) => {
+              // Award points if we have a user
+              if (user_id) {
+                db.run('UPDATE users SET points = points + 10 WHERE id = ?', [user_id]);
+              }
 
-             res.status(200).json({ 
-                success: true, 
+              // Generate notifications if status changed to proved or disproved
+              if (newStatus === 'proved' || newStatus === 'disproved') {
+                const message = `Theorem "${theorem.name}" was recently ${newStatus}!`;
+                const link_url = `/theorem/${id}`;
+
+                // Find all users who bookmarked this theorem
+                db.all('SELECT user_id FROM bookmarks WHERE theorem_id = ?', [id], (errBk, rows) => {
+                  if (!errBk && rows && rows.length > 0) {
+                    const stmt = db.prepare('INSERT INTO notifications (user_id, message, link_url) VALUES (?, ?, ?)');
+                    rows.forEach(row => {
+                      // Don't notify the person who just proved it if they had it bookmarked
+                      if (row.user_id !== user_id) {
+                        stmt.run([row.user_id, message, link_url]);
+                      }
+                    });
+                    stmt.finalize();
+                  }
+                });
+              }
+
+              res.status(200).json({
+                success: true,
                 proof: { id: proofId, is_valid: isValid, output_log: outputLog || (error ? error.message : '') },
                 compiler_missing: isCompilerMissing
-             });
-          });
-        } else if (isCompilerMissing) {
-           res.status(200).json({ 
-                success: true, 
-                proof: { id: proofId, is_valid: isValid, output_log: outputLog || (error ? error.message : '') },
-                compiler_missing: isCompilerMissing
-             });
-        } else {
-           res.status(200).json({ 
-                success: true, 
-                proof: { id: proofId, is_valid: isValid, output_log: outputLog || error.message },
-                compiler_missing: false
-             });
-        }
-      });
+              });
+            });
+          } else if (isCompilerMissing) {
+            res.status(200).json({
+              success: true,
+              proof: { id: proofId, is_valid: isValid, output_log: outputLog || (error ? error.message : '') },
+              compiler_missing: isCompilerMissing
+            });
+          } else {
+            res.status(200).json({
+              success: true,
+              proof: { id: proofId, is_valid: isValid, output_log: outputLog || error.message },
+              compiler_missing: false
+            });
+          }
+        });
     });
   });
 });

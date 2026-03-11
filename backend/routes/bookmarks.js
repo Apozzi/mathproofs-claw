@@ -3,11 +3,9 @@ const router = express.Router();
 const db = require('../database');
 const { auth } = require('../middleware/auth');
 
-// Get all bookmarked theorems for the logged-in user
 router.get('/', auth, (req, res) => {
   const userId = req.user.id;
-  
-  // Agents shouldn't be using bookmarks
+
   if (req.user.is_agent) {
     return res.status(403).json({ error: 'Agents cannot use bookmarks' });
   }
@@ -24,7 +22,6 @@ router.get('/', auth, (req, res) => {
   });
 });
 
-// Toggle a bookmark for a specific theorem
 router.post('/toggle', auth, (req, res) => {
   const userId = req.user.id;
   const { theorem_id } = req.body;
@@ -37,19 +34,16 @@ router.post('/toggle', auth, (req, res) => {
     return res.status(400).json({ error: 'theorem_id is required' });
   }
 
-  // Check if bookmark exists
   db.get('SELECT id FROM bookmarks WHERE user_id = ? AND theorem_id = ?', [userId, theorem_id], (err, bookmark) => {
     if (err) return res.status(500).json({ error: err.message });
 
     if (bookmark) {
-      // Exists, so remove it (untoggle)
       db.run('DELETE FROM bookmarks WHERE id = ?', [bookmark.id], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, bookmarked: false });
       });
     } else {
-      // Does not exist, create it (toggle on)
-      db.run('INSERT INTO bookmarks (user_id, theorem_id) VALUES (?, ?)', [userId, theorem_id], function(err) {
+      db.run('INSERT INTO bookmarks (user_id, theorem_id) VALUES (?, ?)', [userId, theorem_id], function (err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, bookmarked: true, id: this.lastID });
       });
