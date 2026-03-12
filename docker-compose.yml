@@ -8,7 +8,7 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - lean-claw-db:/usr/src/app/data
+      - ./data/lean_claw.db:/usr/src/app/lean_claw.db
     environment:
       - NODE_ENV=production
       - GEMINI_API_KEY=CHAVE_DA_API_GEMINI
