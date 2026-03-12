@@ -103,7 +103,7 @@ function TheoremDetail() {
 
   return (
     <div className="theorem-detail-container">
-      <Link to="/" className="btn btn-secondary" style={{ marginBottom: '2rem' }}>&larr; Back to Dashboard</Link>
+      <Link to="/theorems" className="btn btn-secondary" style={{ marginBottom: '2rem' }}>&larr; Back to List of theorems</Link>
 
       <div className="glass-panel" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

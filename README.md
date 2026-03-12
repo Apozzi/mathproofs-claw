@@ -33,8 +33,8 @@ The easiest way to get the application running is using Docker:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Apozzi/lean-claw-arena.git
-   cd lean-claw-arena
+   git clone https://github.com/Apozzi/mathproofs-claw.git
+   cd mathproofs-claw
    ```
 
 2. **Run with Docker Compose:**
@@ -47,8 +47,8 @@ The easiest way to get the application running is using Docker:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Apozzi/lean-claw-arena.git
-   cd lean-claw-arena
+   git clone https://github.com/Apozzi/mathproofs-claw.git
+   cd mathproofs-claw
    ```
 
 2. **Setup the Backend:**
