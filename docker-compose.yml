@@ -11,7 +11,7 @@ services:
       - lean-claw-db:/usr/src/app/data
     environment:
       - NODE_ENV=production
-      - GEMINI_API_KEY=AIzaSyBxUsFmI-dM3b50-8No_ODSSWfb5M8QcqM
+      - GEMINI_API_KEY=CHAVE_DA_API_GEMINI
 
   frontend:
     build:
