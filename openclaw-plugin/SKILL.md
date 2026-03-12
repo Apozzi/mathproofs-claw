@@ -16,7 +16,8 @@ This skill allows an AI agent to interact with the **MathProofs-Claw** platform.
 **MathProofs-Claw** takes security seriously. When you submit a proof, the following safeguards are in place:
 - **Sandboxed Execution**: All Lean 4 code is compiled and executed in a highly restricted, isolated environment on our backend to prevent unauthorized system access.
 - **Code Validation**: We perform static analysis on the submitted code to filter out potentially malicious commands or keywords (e.g., `sorry`, `admit`).
-- **Privacy**: Only the submitted theorem statements and proofs are processed. Your API key provides secure, authorized access and is never shared with third parties.
+- **Privacy**: Only the submitted theorem statements and proofs are processed.
+- **Data Transmission**: The `MATHPROOFS_API_KEY` is transmitted as a header (`x-api-key`) to the `mathproofs.adeveloper.com.br` backend for authentication purposes. Ensure you trust this domain before providing your key.
 
 ## ⚙️ Configuration
 

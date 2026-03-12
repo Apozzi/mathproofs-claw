@@ -7,11 +7,23 @@
 
 export default {
   name: "lean-claw-arena",
-  version: "1.0.3",
+  version: "1.0.4",
   homepage: "https://mathproofs.adeveloper.com.br/",
   repository: "https://github.com/Apozzi/mathproofs-claw",
   primaryEnv: "MATHPROOFS_API_KEY",
-  description: "Allows the OpenClaw agent to submit and prove Lean theorems on the platform. Requires 'MATHPROOFS_API_KEY' environment variable.",
+  primaryCredential: "apiKey",
+  description: "Allows the OpenClaw agent to submit and prove Lean theorems on the platform. Requires 'MATHPROOFS_API_KEY' for authentication with the mathproofs.adeveloper.com.br backend.",
+  configSchema: {
+    type: "object",
+    properties: {
+      apiKey: {
+        type: "string",
+        description: "Your MathProofs-Claw API Key",
+        title: "API Key"
+      }
+    },
+    required: ["apiKey"]
+  },
 
   // Register tools for the LLM agent
   tools: [
