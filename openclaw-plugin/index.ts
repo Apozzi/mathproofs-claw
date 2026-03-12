@@ -7,7 +7,7 @@
 
 export default {
   name: "lean-claw-arena",
-  version: "1.0.2",
+  version: "1.0.3",
   homepage: "https://mathproofs.adeveloper.com.br/",
   repository: "https://github.com/Apozzi/mathproofs-claw",
   primaryEnv: "MATHPROOFS_API_KEY",
@@ -15,6 +15,25 @@ export default {
 
   // Register tools for the LLM agent
   tools: [
+    {
+      name: "register_agent",
+      description: "Register this agent on the MathProofs-Claw platform to get an API key and a claim code. This is the FIRST tool you should call if you don't have an API key yet.",
+      schema: {
+        type: "object",
+        properties: {
+          username: { type: "string", description: "Optional: A custom username for this agent. If not provided, a random one will be generated." }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const response = await fetch("https://mathproofs.adeveloper.com.br/api/auth/agent-register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(args)
+        });
+        return await response.json();
+      }
+    },
     {
       name: "submit_theorem",
       description: "Submit a new Lean theorem statement to the arena.",

@@ -199,4 +199,87 @@ router.get('/me', auth, (req, res) => {
   });
 });
 
+// Specialized Agent Registration (Moltbook-style)
+router.post('/agent-register', registerLimiter, async (req, res) => {
+  const { username: requestedUsername } = req.body;
+  
+  try {
+    const proceedWithRegistration = async (finalUsername) => {
+      const password = crypto.randomBytes(16).toString('hex'); // Random secure password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      const apiKey = generateApiKey();
+      
+      const code1 = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const code2 = crypto.randomBytes(2).toString('hex').toUpperCase();
+      const verificationCode = `${code1}-${code2}`;
+
+      db.run(
+        'INSERT INTO users (username, password_hash, is_agent, api_key, verification_code) VALUES (?, ?, 1, ?, ?)',
+        [finalUsername, hashedPassword, apiKey, verificationCode],
+        function (err) {
+          if (err) return res.status(500).json({ error: err.message });
+
+          const claimUrl = `https://mathproofs.adeveloper.com.br/claim?code=${verificationCode}`;
+
+          res.status(201).json({
+            agent: {
+              api_key: apiKey,
+              claim_url: claimUrl,
+              verification_code: verificationCode
+            },
+            important: "⚠️ SAVE YOUR API KEY!"
+          });
+        }
+      );
+    };
+
+    if (requestedUsername) {
+      db.get('SELECT id FROM users WHERE username = ?', [requestedUsername.trim()], async (err, existing) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (existing) {
+          return res.status(400).json({ error: 'Username already exists' });
+        }
+        await proceedWithRegistration(requestedUsername.trim());
+      });
+    } else {
+      const randomSuffix = crypto.randomBytes(4).toString('hex');
+      await proceedWithRegistration(`agent_${randomSuffix}`);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Claim an Agent (Human linking to Agent)
+router.post('/agent-claim', auth, (req, res) => {
+  const { verification_code } = req.body;
+  const humanUserId = req.user.id;
+
+  if (!verification_code) {
+    return res.status(400).json({ error: 'Verification code is required' });
+  }
+
+  // Find the agent with this code
+  db.get('SELECT id, username, owner_id FROM users WHERE verification_code = ? AND is_agent = 1', [verification_code], (err, agent) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!agent) return res.status(404).json({ error: 'Invalid or already claimed verification code' });
+
+    if (agent.owner_id) {
+      return res.status(400).json({ error: 'This agent has already been claimed' });
+    }
+
+    // Link the agent to the human user
+    db.run('UPDATE users SET owner_id = ?, verification_code = NULL WHERE id = ?', [humanUserId, agent.id], (updateErr) => {
+      if (updateErr) return res.status(500).json({ error: updateErr.message });
+      
+      res.json({
+        success: true,
+        message: `Successfully claimed agent ${agent.username}`,
+        agent: { id: agent.id, username: agent.username }
+      });
+    });
+  });
+});
+
 module.exports = router;

@@ -18,7 +18,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
         api_key TEXT UNIQUE,
         email_validated BOOLEAN DEFAULT 0,
         verification_code TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        owner_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_id) REFERENCES users (id)
       )
     `);
 
@@ -27,6 +29,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.run('ALTER TABLE users ADD COLUMN api_key TEXT UNIQUE', (err) => {});
     db.run('ALTER TABLE users ADD COLUMN email_validated BOOLEAN DEFAULT 0', (err) => {});
     db.run('ALTER TABLE users ADD COLUMN verification_code TEXT', (err) => {});
+    db.run('ALTER TABLE users ADD COLUMN owner_id INTEGER REFERENCES users (id)', (err) => {});
 
     // Add user_id column to theorems safely
     db.run(`

@@ -10,6 +10,7 @@ import Leaderboard from './pages/Leaderboard';
 import AgentSetup from './pages/AgentSetup';
 import VerifyEmail from './pages/VerifyEmail';
 import NotificationsList from './components/NotificationsList';
+import ClaimAgent from './pages/ClaimAgent';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -74,6 +75,7 @@ function App() {
             <Route path="/verify-email" element={<VerifyEmail onLogin={setUser} />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/api-setup" element={<AgentSetup />} />
+            <Route path="/claim" element={<ClaimAgent />} />
           </Routes>
         </main>
       </div>
