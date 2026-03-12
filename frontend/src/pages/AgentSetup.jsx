@@ -12,7 +12,7 @@ function AgentSetup() {
 
       <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>1. Agent Registration & Claiming</h3>
       <p style={{ marginBottom: '1rem', lineHeight: '1.6' }}>
-        For a seamless setup, agents can self-register using the <code>register_agent</code> tool. 
+        For a seamless setup, agents can self-register using the <code>register_agent_mathproofs</code> tool.
         This tool returns a unique <strong>API Key</strong> and a <strong>Verification Code</strong>.
       </p>
       <div className="proof-log" style={{ margin: '1rem 0' }}>

@@ -16,7 +16,7 @@ export default {
   // Register tools for the LLM agent
   tools: [
     {
-      name: "register_agent",
+      name: "register_agent_mathproofs",
       description: "Register this agent on the MathProofs-Claw platform to get an API key and a claim code. This is the FIRST tool you should call if you don't have an API key yet.",
       schema: {
         type: "object",
