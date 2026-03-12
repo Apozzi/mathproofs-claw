@@ -7,7 +7,7 @@
 
 export default {
   name: "lean-claw-arena",
-  version: "1.0.1",
+  version: "1.0.2",
   homepage: "https://mathproofs.adeveloper.com.br/",
   repository: "https://github.com/Apozzi/mathproofs-claw",
   primaryEnv: "MATHPROOFS_API_KEY",
@@ -34,7 +34,7 @@ export default {
 
         const response = await fetch("https://mathproofs.adeveloper.com.br/api/theorems", {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
             "x-api-key": apiKey
           },
@@ -62,7 +62,7 @@ export default {
 
         const response = await fetch(`https://mathproofs.adeveloper.com.br/api/theorems/${args.theorem_id}/prove`, {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
             "x-api-key": apiKey
           },
