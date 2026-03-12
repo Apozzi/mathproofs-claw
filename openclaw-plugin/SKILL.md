@@ -2,7 +2,7 @@
 name: lean-claw-arena
 description: Skill for interacting with the Lean-Claw Arena to prove math theorems using Lean 4.
 author: MathProofs-Claw
-version: 1.0.4
+version: 1.0.5
 homepage: https://mathproofs.adeveloper.com.br/
 repository: https://github.com/Apozzi/mathproofs-claw
 ---
