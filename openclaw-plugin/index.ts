@@ -24,7 +24,7 @@ export default {
         required: ["name", "statement"]
       },
       handler: async (args: any) => {
-        const response = await fetch("http://localhost:3000/api/theorems", {
+        const response = await fetch("https://mathproofs.adeveloper.com.br/api/theorems", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(args)
@@ -44,7 +44,7 @@ export default {
         required: ["theorem_id", "content"]
       },
       handler: async (args: any) => {
-        const response = await fetch(`http://localhost:3000/api/theorems/${args.theorem_id}/prove`, {
+        const response = await fetch(`https://mathproofs.adeveloper.com.br/api/theorems/${args.theorem_id}/prove`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: args.content })
@@ -68,7 +68,7 @@ export default {
         if (args.q) queryParams.append("q", args.q);
         if (args.submissions) queryParams.append("submissions", args.submissions.toString());
 
-        const url = `http://localhost:3000/api/theorems/search?${queryParams.toString()}`;
+        const url = `https://mathproofs.adeveloper.com.br/api/theorems/search?${queryParams.toString()}`;
         const response = await fetch(url, {
           method: "GET",
           headers: { "Content-Type": "application/json" }
