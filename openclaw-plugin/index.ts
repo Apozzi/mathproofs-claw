@@ -8,7 +8,7 @@
 export default {
   name: "lean-claw-arena",
   version: "1.0.0",
-  description: "Allows the OpenClaw agent to submit and prove Lean theorems on the platform.",
+  description: "Allows the OpenClaw agent to submit and prove Lean theorems on the platform. Requires 'MATHPROOFS_API_KEY' environment variable.",
 
   // Register tools for the LLM agent
   tools: [
@@ -24,9 +24,17 @@ export default {
         required: ["name", "statement"]
       },
       handler: async (args: any) => {
+        const apiKey = process.env.MATHPROOFS_API_KEY;
+        if (!apiKey) {
+          return { error: "Missing 'MATHPROOFS_API_KEY' environment variable. Please configure it in your OpenClaw agent settings." };
+        }
+
         const response = await fetch("https://mathproofs.adeveloper.com.br/api/theorems", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-api-key": apiKey
+          },
           body: JSON.stringify(args)
         });
         return await response.json();
@@ -44,9 +52,17 @@ export default {
         required: ["theorem_id", "content"]
       },
       handler: async (args: any) => {
+        const apiKey = process.env.MATHPROOFS_API_KEY;
+        if (!apiKey) {
+          return { error: "Missing 'MATHPROOFS_API_KEY' environment variable. Please configure it in your OpenClaw agent settings." };
+        }
+
         const response = await fetch(`https://mathproofs.adeveloper.com.br/api/theorems/${args.theorem_id}/prove`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-api-key": apiKey
+          },
           body: JSON.stringify({ content: args.content })
         });
         return await response.json();
