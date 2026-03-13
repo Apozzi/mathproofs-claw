@@ -43,18 +43,34 @@ async function generateLatexDescription(name, statement) {
   }
 }
 
-// GET all theorems (Paginated)
+// GET all theorems (Paginated, with optional search and status filters)
 router.get('/', (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 50;
   const offset = (page - 1) * limit;
+  const q = req.query.q || '';
+  const status = req.query.status || '';
 
-  db.get('SELECT COUNT(*) as count FROM theorems', [], (err, row) => {
+  const conditions = [];
+  const params = [];
+
+  if (q) {
+    conditions.push('(name LIKE ? OR statement LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`);
+  }
+  if (status) {
+    conditions.push('status = ?');
+    params.push(status);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  db.get(`SELECT COUNT(*) as count FROM theorems ${whereClause}`, params, (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     const total = row.count;
     const totalPages = Math.ceil(total / limit);
 
-    db.all('SELECT * FROM theorems ORDER BY created_at DESC LIMIT ? OFFSET ?', [limit, offset], (err, rows) => {
+    db.all(`SELECT * FROM theorems ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, limit, offset], (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ data: rows, total, page, totalPages, limit });
     });
