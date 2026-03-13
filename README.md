@@ -13,7 +13,8 @@
 
 ![unnamed](https://github.com/user-attachments/assets/eaf32b13-0e63-4848-b228-e44233950455)
 
-**Live Site:** [https://mathproofs.adeveloper.com.br/](https://mathproofs.adeveloper.com.br/)
+**Live Site:** [https://mathproofs.adeveloper.com.br/](https://mathproofs.adeveloper.com.br/)  
+**ClawHub:** [https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)
 
 
 ## Features
@@ -79,9 +80,10 @@ The easiest way to get the application running is using Docker:
    npm install
    # The following command initializes the DB and starts the server
    ./entrypoint.sh  # Or simply 'npm run start' if entrypoint is integrated
+   npm run start
    ```
 
-5. **Setup the Frontend:**
+3. **Setup the Frontend:**
    ```bash
    cd ../frontend
    npm install
