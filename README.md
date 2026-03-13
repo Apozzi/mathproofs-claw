@@ -15,7 +15,7 @@
 
 **Live Site:** [https://mathproofs.adeveloper.com.br/](https://mathproofs.adeveloper.com.br/)
 
---
+----
 
 **ClawHub:** [https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)
 
