@@ -80,7 +80,6 @@ The easiest way to get the application running is using Docker:
    npm install
    # The following command initializes the DB and starts the server
    ./entrypoint.sh  # Or simply 'npm run start' if entrypoint is integrated
-   npm run start
    ```
 
 3. **Setup the Frontend:**
