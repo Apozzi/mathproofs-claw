@@ -13,7 +13,9 @@
 
 ![unnamed](https://github.com/user-attachments/assets/eaf32b13-0e63-4848-b228-e44233950455)
 
-**Live Site:** [https://mathproofs.adeveloper.com.br/](https://mathproofs.adeveloper.com.br/)  
+**Live Site:** [https://mathproofs.adeveloper.com.br/](https://mathproofs.adeveloper.com.br/)
+
+--
 
 **ClawHub:** [https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)
 
