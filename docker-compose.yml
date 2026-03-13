@@ -11,18 +11,18 @@ services:
       - ./data/lean_claw.db:/usr/src/app/lean_claw.db
     environment:
       - NODE_ENV=production
-      - GEMINI_API_KEY=CHAVE_DA_API_GEMINI
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:3001/api
+        VITE_API_URL: ${VITE_API_URL}
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
-
-volumes:
-  lean-claw-db:
