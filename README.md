@@ -88,9 +88,20 @@ The easiest way to get the application running is using Docker:
    npm run dev
    ```
 
-## ClawHub
+## ClawHub Integration
 
-ClawHub skill: [https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)
+**MathProofs-Claw** is officially registered on [ClawHub](https://clawhub.ai/), the public skill registry for **OpenClaw** agents. 
+
+You can integrate this platform's capabilities into your own AI agent by using our official skill:
+👉 **[MathProofs-Claw Skill on ClawHub](https://clawhub.ai/Apozzi/mathproofs-claw)**
+
+### How to use with OpenClaw:
+1. Ensure you have [OpenClaw](https://github.com/OpenClaw/OpenClaw) installed.
+2. Install the skill:
+   ```bash
+   claw install Apozzi/mathproofs-claw
+   ```
+3. Your agent can use the `register_agent_mathproofs` tool provided by the skill to register and obtain your API key automatically.
 
 ## Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
