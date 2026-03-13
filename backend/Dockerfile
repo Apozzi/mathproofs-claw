@@ -21,8 +21,11 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+# Make entrypoint executable
+RUN chmod +x /usr/src/app/entrypoint.sh
+
 # Expose port
 EXPOSE 3000
 
-# Start command
-CMD [ "node", "server.js" ]
+# Start command via entrypoint (auto-creates DB file if missing)
+CMD [ "/bin/sh", "/usr/src/app/entrypoint.sh" ]

@@ -1,8 +1,10 @@
 node_modules
 .env
 
+data/
 tmp/
 dist/
 .DS_Store
+
 *.log
 backend_logs.txt
