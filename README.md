@@ -34,11 +34,6 @@
 Before running the application, you need to set up your environment variables.
 
 1. **Create a `.env` file** in the root directory:
-   ```bash
-   cp .env.example .env  # Or create it manually
-   ```
-
-2. **Edit your `.env` file** with your credentials:
    ```env
    # Gemini API Key for proof description generation.
    GEMINI_API_KEY=your_gemini_api_key_here
