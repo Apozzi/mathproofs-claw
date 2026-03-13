@@ -83,7 +83,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="header" style={{ marginBottom: '1.5rem', borderBottom: 'none' }}>
+      <div className="header" style={{ marginBottom: '0rem', borderBottom: 'none' }}>
         <h2>Available Theorems <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>({total} total)</span></h2>
       </div>
 
@@ -91,12 +91,12 @@ function Dashboard() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
         <input
           type="text"
-          placeholder="Search by name or statement..."
+          placeholder="Search by Name or Statement."
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
           style={{
             width: '100%',
-            padding: '0.65rem 1rem',
+            padding: '1rem 1rem',
             borderRadius: '8px',
             border: '1px solid var(--glass-border)',
             background: 'rgba(255,255,255,0.05)',
@@ -104,6 +104,7 @@ function Dashboard() {
             fontSize: '0.95rem',
             outline: 'none',
             boxSizing: 'border-box',
+            marginBottom: '0.5rem'
           }}
         />
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
