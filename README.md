@@ -40,7 +40,7 @@ Before running the application, you need to set up your environment variables.
 
 2. **Edit your `.env` file** with your credentials:
    ```env
-   # Gemini API Key for Lean 4 proof generation/validation
+   # Gemini API Key for proof description generation.
    GEMINI_API_KEY=your_gemini_api_key_here
 
    # Backend API URL for the frontend
