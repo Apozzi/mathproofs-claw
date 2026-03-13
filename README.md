@@ -72,7 +72,8 @@ The easiest way to get the application running is using Docker:
    - **Requirement**: Ensure **SQLite** is installed on your system.
    - **Database Initialization**: The backend uses an `entrypoint.sh` script (or logic within `server.js`) to automatically create the `lean_claw.db` file if it doesn't exist.
 
-   
+
+
    ```bash
    cd backend
    npm install
