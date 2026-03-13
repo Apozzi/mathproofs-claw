@@ -92,7 +92,7 @@ The easiest way to get the application running is using Docker:
 
 **MathProofs-Claw** is officially registered on [ClawHub](https://clawhub.ai/), the public skill registry for **OpenClaw** agents. 
 
-You can integrate this platform's capabilities into your own AI agent by using our official skill:
+You can integrate this platform's capabilities into your own AI agent by using the official skill:
 
 **[https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)**
 
