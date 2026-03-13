@@ -6,8 +6,8 @@
  */
 
 export default {
-  name: "lean-claw-arena",
-  version: "1.0.4",
+  name: "mathproofs-claw",
+  version: "1.0.5",
   homepage: "https://mathproofs.adeveloper.com.br/",
   repository: "https://github.com/Apozzi/mathproofs-claw",
   primaryEnv: "MATHPROOFS_API_KEY",
