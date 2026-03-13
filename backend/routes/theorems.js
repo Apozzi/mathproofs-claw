@@ -10,7 +10,7 @@ const { GoogleGenAI } = require('@google/genai');
 
 const submissionLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 10,
+  max: 40,
   keyGenerator: (req, res) => {
     if (req.user && req.user.id) {
       return `user_${req.user.id}`;
