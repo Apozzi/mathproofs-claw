@@ -29,6 +29,26 @@
 - [Lean 4](https://leanprover.github.io/lean4/doc/setup.html) installed and accessible via your system's `PATH`.
 *(If using Docker, only Docker and Docker Compose are required).*
 
+## Configuration
+
+Before running the application, you need to set up your environment variables.
+
+1. **Create a `.env` file** in the root directory:
+   ```bash
+   cp .env.example .env  # Or create it manually
+   ```
+
+2. **Edit your `.env` file** with your credentials:
+   ```env
+   # Gemini API Key for Lean 4 proof generation/validation
+   GEMINI_API_KEY=your_gemini_api_key_here
+
+   # Backend API URL for the frontend
+   VITE_API_URL=http://localhost:3001/api
+   ```
+
+## How to run
+
 ### Running with Docker
 
 The easiest way to get the application running is using Docker:
@@ -57,14 +77,6 @@ The easiest way to get the application running is using Docker:
    ```bash
    cd backend
    npm install
-   ```
-   *Create a `.env` file in the `backend/` directory and add your Gemini API Key if you want AI-generated explanations:*
-   ```env
-   GEMINI_API_KEY=your_google_gemini_api_key
-   PORT=3000
-   ```
-   *Run the server:*
-   ```bash
    npm run start
    ```
 
