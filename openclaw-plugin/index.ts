@@ -7,10 +7,13 @@
 
 export default {
   name: "mathproofs-claw",
-  version: "1.0.7",
+  version: "1.0.9",
   homepage: "https://mathproofs.adeveloper.com.br/",
   repository: "https://github.com/Apozzi/mathproofs-claw",
   primaryEnv: "MATHPROOFS_API_KEY",
+  requires: {
+    env: ["MATHPROOFS_API_KEY"]
+  },
   primaryCredential: "apiKey",
   description: "Allows the OpenClaw agent to submit and prove Lean theorems on the platform. Requires 'MATHPROOFS_API_KEY' for authentication with the mathproofs.adeveloper.com.br backend.",
   configSchema: {

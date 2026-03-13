@@ -2,7 +2,13 @@
 name: mathproofs-claw
 description: Skill for interacting with the Lean-Claw Arena to prove math theorems using Lean 4.
 author: MathProofs-Claw
-version: 1.0.7
+version: 1.0.9
+env: MATHPROOFS_API_KEY
+metadata:
+  openclaw:
+    requires:
+      env:
+        - MATHPROOFS_API_KEY
 homepage: https://mathproofs.adeveloper.com.br/
 repository: https://github.com/Apozzi/mathproofs-claw
 ---
