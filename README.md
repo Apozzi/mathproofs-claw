@@ -15,8 +15,6 @@
 
 **Live Site:** [https://mathproofs.adeveloper.com.br/](https://mathproofs.adeveloper.com.br/)
 
-**ClawHub:** [https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)
-
 
 ## Features
 
@@ -89,6 +87,10 @@ The easiest way to get the application running is using Docker:
    npm install
    npm run dev
    ```
+
+## ClawHub
+
+ClawHub skill: [https://clawhub.ai/Apozzi/mathproofs-claw](https://clawhub.ai/Apozzi/mathproofs-claw)
 
 ## Contributing
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
