@@ -91,4 +91,4 @@ The easiest way to get the application running is using Docker:
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
