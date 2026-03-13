@@ -69,7 +69,9 @@ The easiest way to get the application running is using Docker:
    ```
 
 2. **Setup the Backend:**
+3. 
    **Requirement**: Ensure **SQLite** is installed on your system.
+   
    **Database Initialization**: The backend uses an `entrypoint.sh` script (or logic within `server.js`) to automatically create the `lean_claw.db` file if it doesn't exist.
 
    ```bash
@@ -79,7 +81,7 @@ The easiest way to get the application running is using Docker:
    ./entrypoint.sh  # Or simply 'npm run start' if entrypoint is integrated
    ```
 
-3. **Setup the Frontend:**
+5. **Setup the Frontend:**
    ```bash
    cd ../frontend
    npm install
