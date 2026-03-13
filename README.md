@@ -56,7 +56,7 @@ The easiest way to get the application running is using Docker:
 
 2. **Run with Docker Compose:**
    ```bash
-   docker-compose up --build
+   docker-compose up -d --build
    ```
    *The frontend will be available at `http://localhost`, and the backend API at `http://localhost:3001`.*
 
