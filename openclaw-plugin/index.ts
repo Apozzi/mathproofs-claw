@@ -1,8 +1,8 @@
 /**
- * OpenClaw Plugin Stub for Lean-Claw Arena
+ * OpenClaw Plugin Stub for MathProofs-Claw
  * 
  * This file can be compiled and loaded into an OpenClaw gateway to provide
- * the agent with tools to interact with the lean-claw-arena backend.
+ * the agent with tools to interact with the MathProofs-Claw backend.
  */
 
 export default {
