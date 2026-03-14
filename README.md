@@ -40,6 +40,11 @@ Before running the application, you need to set up your environment variables.
 
    # Backend API URL for the frontend
    VITE_API_URL=http://localhost:3001/api
+
+   # Resend (email service)
+   RESEND_API_KEY=your_resend_key
+   RESEND_FROM_EMAIL=your_email@domain.com
+
    ```
 
 ## How to run

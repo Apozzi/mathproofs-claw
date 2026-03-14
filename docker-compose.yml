@@ -8,10 +8,12 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - ./data/lean_claw.db:/usr/src/app/lean_claw.db
+      - ./data:/usr/src/app/persist
     environment:
       - NODE_ENV=production
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
 
   frontend:
     build:

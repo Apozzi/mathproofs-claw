@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 function ClaimAgent() {
@@ -22,7 +22,7 @@ function ClaimAgent() {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/agent-claim`, 
+      const response = await api.post('/auth/agent-claim', 
         { verification_code: code },
         { headers: { Authorization: `Bearer ${token}` } }
       );

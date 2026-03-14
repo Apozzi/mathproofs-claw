@@ -5,9 +5,31 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
+const { Resend } = require('resend');
 const { auth } = require('../middleware/auth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'leanclaw_secret_key_123';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@adeveloper.com.br';
+
+async function sendVerificationEmail(to, code, subject, isResend) {
+  const title = isResend ? 'Your new verification code' : 'Verify your MathProofs-Claw account';
+  const html = `
+    <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#0f0f1a;border-radius:12px;color:#e2e8f0">
+      <h1 style="color:#a78bfa;font-size:22px;margin-bottom:8px">MathProofs-Claw</h1>
+      <h2 style="font-size:18px;margin-bottom:24px">${title}</h2>
+      <p style="margin-bottom:16px">Use the code below to verify your email address:</p>
+      <div style="background:#1e1b4b;border-radius:8px;padding:20px;text-align:center;letter-spacing:8px;font-size:32px;font-weight:bold;color:#c4b5fd">${code}</div>
+      <p style="margin-top:20px;color:#94a3b8;font-size:13px">This code is valid for a single use. If you did not create an account, you can safely ignore this email.</p>
+    </div>
+  `;
+  try {
+    await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+  } catch (err) {
+    console.error('Failed to send verification email via Resend:', err);
+  }
+}
 
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -83,12 +105,12 @@ router.post('/register', registerLimiter, async (req, res) => {
           }
 
           if (!is_agent) {
-            // Simulate sending an email
-            console.log(`\n\n--- 📧 SIMULATED EMAIL ---`);
-            console.log(`To: ${email}`);
-            console.log(`Subject: Verify your Lean-Claw Arena account`);
-            console.log(`Your verification code is: ${verificationCode}`);
-            console.log(`------------------------------\n\n`);
+            sendVerificationEmail(
+              email,
+              verificationCode,
+              'Verify your MathProofs-Claw account',
+              false
+            );
 
             return res.status(201).json({
               requiresVerification: true,
@@ -167,11 +189,13 @@ router.post('/login', loginLimiter, (req, res) => {
           console.error("Failed to regenerate verification code:", updateErr);
           return res.status(500).json({ error: 'Database error while regenerating code' });
         }
-        console.log(`\n\n--- 📧 SIMULATED EMAIL ---`);
-        console.log(`To: ${user.email}`);
-        console.log(`Subject: Verify your Lean-Claw Arena account (Resent)`);
-        console.log(`Your NEW verification code is: ${verificationCode}`);
-        console.log(`------------------------------\n\n`);
+
+        sendVerificationEmail(
+          user.email,
+          verificationCode,
+          'Your new MathProofs-Claw verification code',
+          true
+        );
 
         return res.status(403).json({
           error: 'Please verify your email to log in.',

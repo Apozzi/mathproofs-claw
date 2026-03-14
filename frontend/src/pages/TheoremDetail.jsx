@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useParams, Link } from 'react-router-dom';
 import 'katex/dist/katex.min.css';
 import Latex from 'react-latex-next';
@@ -32,7 +32,7 @@ function TheoremDetail() {
 
   const checkBookmarkStatus = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/bookmarks`, {
+      const response = await api.get('/bookmarks', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       // Check if current theorem id is in the user's bookmarks
@@ -45,7 +45,7 @@ function TheoremDetail() {
 
   const toggleBookmark = async () => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/bookmarks/toggle`,
+      const response = await api.post('/bookmarks/toggle',
         { theorem_id: id },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
@@ -57,7 +57,7 @@ function TheoremDetail() {
 
   const fetchTheorem = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/theorems/${id}`);
+      const response = await api.get(`/theorems/${id}`);
       setTheorem(response.data);
       // prepopulate proof content if statement exists
       setProofContent(`-- Prove the following theorem:\n${response.data.statement}\n  sorry\n`);
@@ -73,7 +73,7 @@ function TheoremDetail() {
     setResult(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/theorems/${id}/prove`,
+      const response = await api.post(`/theorems/${id}/prove`,
         { content: proofContent },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );

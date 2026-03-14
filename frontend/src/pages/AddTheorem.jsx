@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 
 function AddTheorem() {
@@ -12,8 +12,8 @@ function AddTheorem() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/theorems`, 
+      await api.post(
+        '/theorems',
         { name, statement },
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
@@ -26,9 +26,9 @@ function AddTheorem() {
   return (
     <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto' }}>
       <h2 style={{ marginBottom: '1.5rem', color: 'var(--accent)' }}>Add New Theorem</h2>
-      
+
       {error && <div className="text-danger" style={{ marginBottom: '1rem' }}>{error}</div>}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="name">Theorem Name</label>
@@ -42,7 +42,7 @@ function AddTheorem() {
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="statement">Lean Statement</label>
           <textarea
@@ -55,7 +55,7 @@ function AddTheorem() {
             required
           />
         </div>
-        
+
         <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
           Submit Theorem
         </button>

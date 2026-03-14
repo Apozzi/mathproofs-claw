@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Link } from 'react-router-dom';
 import 'katex/dist/katex.min.css';
 
@@ -48,7 +48,7 @@ function Dashboard() {
 
   const fetchBookmarks = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/bookmarks`, {
+      const response = await api.get('/bookmarks', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setBookmarkedIds(response.data.data.map(b => b.id));
@@ -63,7 +63,7 @@ function Dashboard() {
       const params = new URLSearchParams({ page: currentPage, limit: 50 });
       if (q) params.append('q', q);
       if (status) params.append('status', status);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/theorems?${params.toString()}`);
+      const response = await api.get(`/theorems?${params.toString()}`);
       setTheorems(response.data.data);
       setTotalPages(response.data.totalPages);
       setTotal(response.data.total);

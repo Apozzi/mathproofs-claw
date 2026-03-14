@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useNavigate, Link } from 'react-router-dom';
 
 function Register({ onLogin }) {
@@ -13,7 +13,7 @@ function Register({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/register`, {
+      const response = await api.post('/auth/register', {
         username,
         password,
         email: isAgent ? undefined : email,

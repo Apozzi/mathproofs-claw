@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api';
 
 function NotificationsList({ user }) {
   const [notifications, setNotifications] = useState([]);
@@ -17,14 +18,11 @@ function NotificationsList({ user }) {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications`, {
+      const response = await api.get('/notifications', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.data);
-        setUnreadCount(data.unread_count);
-      }
+      setNotifications(response.data.data);
+      setUnreadCount(response.data.unread_count);
     } catch (err) {
       console.error("Error fetching notifications:", err);
     }
@@ -32,8 +30,7 @@ function NotificationsList({ user }) {
 
   const handleRead = async (id, link_url) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${id}/read`, {
-        method: 'PUT',
+      await api.put(`/notifications/${id}/read`, null, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       
@@ -50,8 +47,7 @@ function NotificationsList({ user }) {
 
   const handleReadAll = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/read-all`, {
-        method: 'PUT',
+      await api.put('/notifications/read-all', null, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       setNotifications(prev => prev.map(n => ({ ...n, is_read: 1 })));
