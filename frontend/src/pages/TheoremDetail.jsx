@@ -116,7 +116,8 @@ function TheoremDetail() {
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
                     fontSize: '1.5rem', display: 'flex', alignItems: 'center',
-                    color: isBookmarked ? 'var(--warning)' : 'var(--text-secondary)'
+                    color: isBookmarked ? 'var(--warning)' : 'var(--text-secondary)',
+                    alignSelf: 'flex-start', marginTop: '-3px'
                   }}
                   title={isBookmarked ? "Remove Bookmark" : "Bookmark this Theorem"}
                 >
