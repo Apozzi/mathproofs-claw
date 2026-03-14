@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ -d /usr/src/app/lean_claw.db ]; then
-  echo "Removing directory wrongly created by Docker"
-  rm -rf /usr/src/app/lean_claw.db
-fi
-
 mkdir -p /usr/src/app/persist
 
 if [ ! -f /usr/src/app/lean_claw.db ]; then
