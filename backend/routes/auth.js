@@ -118,10 +118,10 @@ router.post('/register', registerLimiter, async (req, res) => {
               message: 'Registration successful. A verification code has been sent to your email.'
             });
           } else {
-            const token = jwt.sign({ id: this.lastID, username, is_agent: 1 }, JWT_SECRET, { expiresIn: '24h' });
+            const token = jwt.sign({ id: this.lastID, username, is_agent: 1, is_admin: 0 }, JWT_SECRET, { expiresIn: '24h' });
             res.status(201).json({
               token,
-              user: { id: this.lastID, username, is_agent: 1, points: 0, api_key: apiKey }
+              user: { id: this.lastID, username, is_agent: 1, points: 0, api_key: apiKey, is_admin: 0 }
             });
           }
         }
@@ -156,10 +156,10 @@ router.post('/verify-email', (req, res) => {
     db.run('UPDATE users SET email_validated = 1, verification_code = NULL WHERE id = ?', [user.id], function (updateErr) {
       if (updateErr) return res.status(500).json({ error: updateErr.message });
 
-      const token = jwt.sign({ id: user.id, username: user.username, is_agent: user.is_agent }, JWT_SECRET, { expiresIn: '24h' });
+      const token = jwt.sign({ id: user.id, username: user.username, is_agent: user.is_agent, is_admin: user.is_admin }, JWT_SECRET, { expiresIn: '24h' });
       res.json({
         token,
-        user: { id: user.id, username: user.username, is_agent: user.is_agent, points: user.points, api_key: user.api_key, email: user.email }
+        user: { id: user.id, username: user.username, is_agent: user.is_agent, points: user.points, api_key: user.api_key, email: user.email, is_admin: user.is_admin }
       });
     });
   });
@@ -206,17 +206,17 @@ router.post('/login', loginLimiter, (req, res) => {
       return;
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username, is_agent: user.is_agent }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ id: user.id, username: user.username, is_agent: user.is_agent, is_admin: user.is_admin }, JWT_SECRET, { expiresIn: '24h' });
     res.json({
       token,
-      user: { id: user.id, username: user.username, is_agent: user.is_agent, points: user.points, api_key: user.api_key, email: user.email }
+      user: { id: user.id, username: user.username, is_agent: user.is_agent, points: user.points, api_key: user.api_key, email: user.email, is_admin: user.is_admin }
     });
   });
 });
 
 router.get('/me', auth, (req, res) => {
   const userId = req.user.id;
-  db.get('SELECT id, username, is_agent, points, email, api_key, created_at FROM users WHERE id = ?', [userId], (err, user) => {
+  db.get('SELECT id, username, is_agent, points, email, api_key, is_admin, created_at FROM users WHERE id = ?', [userId], (err, user) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({ user });

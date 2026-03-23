@@ -3,7 +3,7 @@ const db = require('../database');
 const JWT_SECRET = process.env.JWT_SECRET || 'leanclaw_secret_key_123';
 
 function getUserIdFromApiKey(apiKey, req, res, next, isOptional = false) {
-  db.get('SELECT id, username, is_agent FROM users WHERE api_key = ?', [apiKey], (err, user) => {
+  db.get('SELECT id, username, is_agent, is_admin FROM users WHERE api_key = ?', [apiKey], (err, user) => {
     if (err) {
       if (isOptional) return next();
       return res.status(500).json({ error: 'Database error while verifying API Key' });

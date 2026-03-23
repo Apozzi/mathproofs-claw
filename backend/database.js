@@ -1,7 +1,14 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, 'lean_claw.db');
+const fs = require('fs');
+
+const dbPath = process.env.DB_PATH || 
+  (fs.existsSync(path.resolve(__dirname, 'persist')) 
+    ? path.resolve(__dirname, 'persist', 'lean_claw.db') 
+    : path.resolve(__dirname, '..', 'data', 'lean_claw.db'));
+
+console.log(`Database path: ${dbPath}`);
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database', err.message);
@@ -19,6 +26,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         email_validated BOOLEAN DEFAULT 0,
         verification_code TEXT,
         owner_id INTEGER,
+        is_admin BOOLEAN DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (owner_id) REFERENCES users (id)
       )
@@ -30,6 +38,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.run('ALTER TABLE users ADD COLUMN email_validated BOOLEAN DEFAULT 0', (err) => {});
     db.run('ALTER TABLE users ADD COLUMN verification_code TEXT', (err) => {});
     db.run('ALTER TABLE users ADD COLUMN owner_id INTEGER REFERENCES users (id)', (err) => {});
+    db.run('ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0', (err) => {});
 
     // Add user_id column to theorems safely
     db.run(`
@@ -40,12 +49,14 @@ const db = new sqlite3.Database(dbPath, (err) => {
         description_latex TEXT,
         status TEXT DEFAULT 'unproved',
         user_id INTEGER,
+        has_problems BOOLEAN DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users (id)
       )
     `);
     db.run('ALTER TABLE theorems ADD COLUMN user_id INTEGER REFERENCES users (id)', (err) => {});
     db.run('ALTER TABLE theorems ADD COLUMN description_latex TEXT', (err) => {});
+    db.run('ALTER TABLE theorems ADD COLUMN has_problems BOOLEAN DEFAULT 0', (err) => {});
 
     // Add user_id column to proofs safely
     db.run(`

@@ -12,6 +12,9 @@ function TheoremDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isTogglingProblem, setIsTogglingProblem] = useState(false);
+  const [isReevaluating, setIsReevaluating] = useState(false);
   const userStr = localStorage.getItem('user');
   let loggedInUser = null;
   if (userStr && userStr !== 'undefined') {
@@ -52,6 +55,55 @@ function TheoremDetail() {
       setIsBookmarked(response.data.bookmarked);
     } catch (err) {
       console.error('Error toggling bookmark:', err);
+    }
+  };
+
+  const regenerateDescription = async () => {
+    if (!window.confirm("Are you sure you want to regenerate the AI explanation?")) return;
+    setIsRegenerating(true);
+    try {
+      const response = await api.post(`/theorems/${id}/regenerate-description`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setTheorem(prev => ({ ...prev, description_latex: response.data.description_latex }));
+      alert("AI Explanation successfully regenerated!");
+    } catch (err) {
+      console.error('Error regenerating description:', err);
+      alert("Failed to regenerate description.");
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const toggleProblem = async () => {
+    setIsTogglingProblem(true);
+    try {
+      const response = await api.post(`/theorems/${id}/toggle-problem`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setTheorem(prev => ({ ...prev, has_problems: response.data.has_problems }));
+    } catch (err) {
+      console.error('Error toggling problem status:', err);
+    } finally {
+      setIsTogglingProblem(false);
+    }
+  };
+
+  const reEvaluateSubmissions = async () => {
+    if (!window.confirm("Are you sure you want to re-evaluate ALL submissions? This might take a while if there are many proofs.")) return;
+    setIsReevaluating(true);
+    try {
+      const response = await api.post(`/theorems/${id}/re-evaluate-submissions`, {}, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      alert(response.data.message);
+      // Refresh theorem to get updated proofs and status
+      fetchTheorem();
+    } catch (err) {
+      console.error('Error re-evaluating submissions:', err);
+      alert(err.response?.data?.error || "Failed to re-evaluate submissions.");
+    } finally {
+      setIsReevaluating(false);
     }
   };
 
@@ -104,6 +156,55 @@ function TheoremDetail() {
   return (
     <div className="theorem-detail-container">
       <Link to="/theorems" className="btn btn-secondary" style={{ marginBottom: '2rem' }}>&larr; Back to List of theorems</Link>
+
+      {theorem.has_problems === 1 && (
+        <div className="animate-fade-in" style={{
+          padding: '1.5rem',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '2px solid var(--danger)',
+          borderRadius: '8px',
+          marginBottom: '2rem',
+          color: 'var(--danger)',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          fontSize: '1rem'
+        }}>
+          This theorem is presenting problems, the administrator has already become aware and is providing the necessary bug fixes!
+        </div>
+      )}
+
+      {loggedInUser?.is_admin === 1 && (
+        <div className="glass-panel" style={{ marginBottom: '2rem' }}>
+          <h3 style={{ color: 'var(--accent)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.2rem' }}></span> Administration Tools
+          </h3>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={regenerateDescription}
+              disabled={isRegenerating}
+              style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
+            >
+              {isRegenerating ? 'Regenerating...' : 'Regenerate AI Explanation'}
+            </button>
+            <button
+              className={`btn ${theorem.has_problems ? 'btn-success' : 'btn-danger'}`}
+              onClick={toggleProblem}
+              disabled={isTogglingProblem}
+            >
+              {isTogglingProblem ? 'Updating...' : (theorem.has_problems ? 'Unmark Problem' : 'Mark as Problematic')}
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={reEvaluateSubmissions}
+              disabled={isReevaluating}
+              style={{ background: 'var(--accent)', color: 'white' }}
+            >
+              {isReevaluating ? 'Re-evaluating...' : 'Re-evaluate All Submissions'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="glass-panel" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

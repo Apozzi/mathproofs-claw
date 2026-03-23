@@ -43,7 +43,7 @@ export default {
       handler: async (args: any) => {
         const response = await fetch("https://mathproofs.adeveloper.com.br/api/auth/agent-register", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json; charset=utf-8" },
           body: JSON.stringify(args)
         });
         return await response.json();
@@ -69,7 +69,7 @@ export default {
         const response = await fetch("https://mathproofs.adeveloper.com.br/api/theorems", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
             "x-api-key": apiKey
           },
           body: JSON.stringify(args)
@@ -97,7 +97,7 @@ export default {
         const response = await fetch(`https://mathproofs.adeveloper.com.br/api/theorems/${args.theorem_id}/prove`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
             "x-api-key": apiKey
           },
           body: JSON.stringify({ content: args.content })
@@ -124,7 +124,7 @@ export default {
         const url = `https://mathproofs.adeveloper.com.br/api/theorems/search?${queryParams.toString()}`;
         const response = await fetch(url, {
           method: "GET",
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json; charset=utf-8" }
         });
         return await response.json();
       }

@@ -4,9 +4,11 @@ const db = require('../database');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenAI } = require('@google/genai');
+
+// --- Configuration & Initialization ---
 
 const submissionLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
@@ -15,8 +17,9 @@ const submissionLimiter = rateLimit({
     if (req.user && req.user.id) {
       return `user_${req.user.id}`;
     }
-    return req.ip || req.connection.remoteAddress || 'unknown';
+    return req.ip || req.connection?.remoteAddress || 'unknown';
   },
+  validate: false,
   message: { error: 'Too many submissions. Please wait before trying again.' }
 });
 
@@ -25,11 +28,12 @@ if (process.env.GEMINI_API_KEY) {
   ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
+// --- Helper Functions ---
+
 async function generateLatexDescription(name, statement) {
   if (!ai) {
     return '*(AI rendering not configured - missing GEMINI_API_KEY)*\n\nFallback Math: $$\\forall x, P(x) \\rightarrow Q(x)$$';
   }
-
   try {
     const prompt = `Given the following Lean 4 theorem name '${name}' and statement '${statement}', provide a short, mathematical explanation using LaTeX format. Only return the explanation text with inline $\\dots$ or display $$\\dots$$ math. Do not wrap it in markdown code blocks. Make it short and intuitive.`;
     const response = await ai.models.generateContent({
@@ -43,8 +47,71 @@ async function generateLatexDescription(name, statement) {
   }
 }
 
-// GET all theorems (Paginated, with optional search and status filters)
-router.get('/', (req, res) => {
+function stripComments(content) {
+  let contentWithoutComments = content.replace(/--.*$/gm, '');
+  let previousContent;
+  do {
+    previousContent = contentWithoutComments;
+    contentWithoutComments = contentWithoutComments.replace(/\/-[\s\S]*?-\//g, '');
+  } while (contentWithoutComments !== previousContent);
+  return contentWithoutComments;
+}
+
+function getTheoremIdentifier(statement) {
+  const match = statement.match(/(?:theorem|lemma|axiom|def)\s+([^\s({:]+)/);
+  return match ? match[1] : null;
+}
+
+function runLeanCompiler(content) {
+  return new Promise((resolve) => {
+    const tempDir = path.join(__dirname, '..', 'tmp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+    const fileName = `proof_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.lean`;
+    const filePath = path.join(tempDir, fileName);
+    fs.writeFileSync(filePath, content);
+
+    exec(`lake env lean "${filePath}"`, (error, stdout, stderr) => {
+      const outputLog = stdout + (stderr ? '\n' + stderr : '');
+      const isValid = !error;
+      const isCompilerMissing = error && (error.message.includes('not found') || error.message.includes('not recognized'));
+
+      try { fs.unlinkSync(filePath); } catch (e) { }
+
+      resolve({
+        isValid,
+        isCompilerMissing,
+        outputLog: outputLog || (error ? error.message : '')
+      });
+    });
+  });
+}
+
+function notifySubscribersAndAwardPoints(userId, theoremId, theoremName, status) {
+  if (userId) {
+    db.run('UPDATE users SET points = points + 10 WHERE id = ?', [userId]);
+  }
+  if (status === 'proved' || status === 'disproved') {
+    const message = `Theorem "${theoremName}" was recently ${status}!`;
+    const link_url = `/theorem/${theoremId}`;
+    db.all('SELECT user_id FROM bookmarks WHERE theorem_id = ?', [theoremId], (err, rows) => {
+      if (!err && rows && rows.length > 0) {
+        const stmt = db.prepare('INSERT INTO notifications (user_id, message, link_url) VALUES (?, ?, ?)');
+        rows.forEach(row => {
+          if (row.user_id !== userId) {
+            stmt.run([row.user_id, message, link_url]);
+          }
+        });
+        stmt.finalize();
+      }
+    });
+  }
+}
+
+// --- Route Handlers ---
+
+const getAllTheorems = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 50;
   const offset = (page - 1) * limit;
@@ -75,10 +142,9 @@ router.get('/', (req, res) => {
       res.json({ data: rows, total, page, totalPages, limit });
     });
   });
-});
+};
 
-// GET search theorems
-router.get('/search', (req, res) => {
+const searchTheorems = (req, res) => {
   const q = req.query.q || '';
   const limit_submissions = parseInt(req.query.submissions) || 0;
 
@@ -90,8 +156,6 @@ router.get('/search', (req, res) => {
 
   db.all('SELECT * FROM theorems WHERE name LIKE ? OR statement LIKE ? ORDER BY created_at DESC', [searchQuery, searchQuery], async (err, theorems) => {
     if (err) return res.status(500).json({ error: err.message });
-
-    // For each theorem, attach proofs
     const theoremsWithProofs = [];
 
     for (const theorem of theorems) {
@@ -99,7 +163,6 @@ router.get('/search', (req, res) => {
 
       if (theorem.status === 'proved' || theorem.status === 'disproved') {
         await new Promise((resolve) => {
-          // Fetch the shortest valid proof by character count (ignoring spaces and newlines)
           const shortestProofQuery = `
             SELECT * FROM proofs 
             WHERE theorem_id = ? AND is_valid = 1 
@@ -124,13 +187,11 @@ router.get('/search', (req, res) => {
 
       theoremsWithProofs.push(thm);
     }
-
     res.json({ data: theoremsWithProofs });
   });
-});
+};
 
-// GET theorem by id with its proofs
-router.get('/:id', (req, res) => {
+const getTheoremById = (req, res) => {
   const { id } = req.params;
   db.get(`
     SELECT t.*, u.username as author_name 
@@ -153,10 +214,9 @@ router.get('/:id', (req, res) => {
       res.json({ ...theorem, proofs });
     });
   });
-});
+};
 
-// POST new theorem
-router.post('/', auth, submissionLimiter, async (req, res) => {
+const createTheorem = async (req, res) => {
   const { name, statement } = req.body;
   const user_id = req.user ? req.user.id : null;
 
@@ -164,135 +224,181 @@ router.post('/', auth, submissionLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Name and statement are required' });
   }
 
-  // Generate description using AI
+  const trimmedStatement = statement.trim();
+  if (/\bsorry\b/.test(trimmedStatement)) {
+    return res.status(400).json({ error: 'Theorem statement cannot contain "sorry" under any circumstances.' });
+  }
+  if (!trimmedStatement.endsWith(':=')) {
+    return res.status(400).json({ error: 'Theorem statement must end with ":=".' });
+  }
+
   const description_latex = await generateLatexDescription(name, statement);
 
   db.run('INSERT INTO theorems (name, statement, description_latex, user_id) VALUES (?, ?, ?, ?)', [name, statement, description_latex, user_id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ id: this.lastID, name, statement, description_latex, status: 'unproved', user_id });
   });
-});
+};
 
-// POST submit a proof
-router.post('/:id/prove', auth, submissionLimiter, (req, res) => {
+const regenerateDescription = async (req, res) => {
+  if (!req.user || !req.user.is_admin) {
+    return res.status(403).json({ error: 'Only administrators can regenerate descriptions.' });
+  }
+  const { id } = req.params;
+  db.get('SELECT * FROM theorems WHERE id = ?', [id], async (err, theorem) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!theorem) return res.status(404).json({ error: 'Theorem not found' });
+
+    const newDescription = await generateLatexDescription(theorem.name, theorem.statement);
+    db.run('UPDATE theorems SET description_latex = ? WHERE id = ?', [newDescription, id], (errUp) => {
+      if (errUp) return res.status(500).json({ error: errUp.message });
+      res.json({ success: true, description_latex: newDescription });
+    });
+  });
+};
+
+const toggleTheoremProblem = (req, res) => {
+  if (!req.user || !req.user.is_admin) {
+    return res.status(403).json({ error: 'Only administrators can flag theorems.' });
+  }
+  const { id } = req.params;
+  db.get('SELECT has_problems FROM theorems WHERE id = ?', [id], (err, theorem) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!theorem) return res.status(404).json({ error: 'Theorem not found' });
+
+    const newStatus = theorem.has_problems ? 0 : 1;
+    db.run('UPDATE theorems SET has_problems = ? WHERE id = ?', [newStatus, id], (errUp) => {
+      if (errUp) return res.status(500).json({ error: errUp.message });
+      res.json({ success: true, has_problems: newStatus });
+    });
+  });
+};
+
+const reEvaluateSubmissions = async (req, res) => {
+  if (!req.user || !req.user.is_admin) {
+    return res.status(403).json({ error: 'Only administrators can re-evaluate submissions.' });
+  }
+  const { id } = req.params;
+
+  db.get('SELECT * FROM theorems WHERE id = ?', [id], (err, theorem) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!theorem) return res.status(404).json({ error: 'Theorem not found' });
+
+    db.all('SELECT * FROM proofs WHERE theorem_id = ?', [id], async (err, proofs) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!proofs || proofs.length === 0) {
+        return res.json({ success: true, message: 'No submissions found to re-evaluate.' });
+      }
+
+      let anyValid = false;
+      let isDisproved = false;
+      const identifier = getTheoremIdentifier(theorem.statement);
+
+      for (const proof of proofs) {
+        const contentWithoutComments = stripComments(proof.content);
+        let { isValid, isCompilerMissing, outputLog } = await runLeanCompiler(proof.content);
+
+        // Additional guardrails check
+        if (/\bsorry\b/.test(contentWithoutComments) || /\badmit\b/.test(contentWithoutComments)) {
+          isValid = false;
+        }
+        if (identifier && !contentWithoutComments.includes(identifier)) {
+          isValid = false;
+        }
+        if (isCompilerMissing) {
+          isValid = proof.is_valid;
+        }
+
+        await new Promise(resolve => {
+          db.run('UPDATE proofs SET is_valid = ?, output_log = ? WHERE id = ?',
+            [isValid ? 1 : 0, outputLog, proof.id], () => resolve());
+        });
+
+        if (isValid && !isCompilerMissing) {
+          anyValid = true;
+          if (identifier && contentWithoutComments.includes(`${identifier}_disproved`)) {
+            isDisproved = true;
+          }
+        }
+      }
+
+      let newStatus = 'unproved';
+      if (anyValid) {
+        newStatus = isDisproved ? 'disproved' : 'proved';
+      }
+
+      db.run('UPDATE theorems SET status = ? WHERE id = ?', [newStatus, id], (errUp) => {
+        if (errUp) return res.status(500).json({ error: errUp.message });
+        res.json({ success: true, message: `Re-evaluated ${proofs.length} submissions. New theorem status: ${newStatus}` });
+      });
+    });
+  });
+};
+
+const submitProof = (req, res) => {
   const { id } = req.params;
   const { content } = req.body;
   const user_id = req.user ? req.user.id : null;
 
   if (!content) return res.status(400).json({ error: 'Proof content is required' });
 
-  // First, verify theorem exists
-  db.get('SELECT * FROM theorems WHERE id = ?', [id], (err, theorem) => {
+  db.get('SELECT * FROM theorems WHERE id = ?', [id], async (err, theorem) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!theorem) return res.status(404).json({ error: 'Theorem not found' });
 
-    // Remove comments to prevent bypassing validation via comments
-    let contentWithoutComments = content.replace(/--.*$/gm, '');
-    let previousContent;
-    do {
-      previousContent = contentWithoutComments;
-      contentWithoutComments = contentWithoutComments.replace(/\/-[\s\S]*?-\//g, '');
-    } while (contentWithoutComments !== previousContent);
+    const contentWithoutComments = stripComments(content);
 
-    // Guardrails
     if (/\bsorry\b/.test(contentWithoutComments) || /\badmit\b/.test(contentWithoutComments)) {
       return res.status(400).json({ error: 'Proof cannot contain "sorry" or "admit"' });
     }
 
-    const match = theorem.statement.match(/(?:theorem|lemma|axiom|def)\s+([^\s({:]+)/);
-    const identifier = match ? match[1] : null;
-
+    const identifier = getTheoremIdentifier(theorem.statement);
     if (identifier && !contentWithoutComments.includes(identifier)) {
       return res.status(400).json({ error: `Proof must contain the declaration for theorem/lemma '${identifier}' or related disproof.` });
     }
 
-    // Determine if it's a disproof attempt (simple heuristic: contains identifier_disproved)
-    let isDisproofAttempt = false;
-    if (identifier && contentWithoutComments.includes(`${identifier}_disproved`)) {
-      isDisproofAttempt = true;
+    const isDisproofAttempt = identifier && contentWithoutComments.includes(`${identifier}_disproved`);
+
+    const { isValid, isCompilerMissing, outputLog } = await runLeanCompiler(content);
+    let newStatus = isValid ? (isDisproofAttempt ? 'disproved' : 'proved') : 'unproved';
+
+    if (isCompilerMissing || !isValid) {
+      newStatus = theorem.status;
     }
 
-    // Save proof to a temporary file
-    const tempDir = path.join(__dirname, '..', 'tmp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
-    }
+    db.run('INSERT INTO proofs (theorem_id, user_id, content, is_valid, output_log) VALUES (?, ?, ?, ?, ?)',
+      [id, user_id, content, isValid, outputLog],
+      function (errIn) {
+        if (errIn) return res.status(500).json({ error: errIn.message });
+        const proofId = this.lastID;
 
-    const fileName = `proof_${Date.now()}.lean`;
-    const filePath = path.join(tempDir, fileName);
-    fs.writeFileSync(filePath, content);
+        const responsePayload = {
+          success: true,
+          proof: { id: proofId, is_valid: isValid, output_log: outputLog },
+          compiler_missing: isCompilerMissing
+        };
 
-    // Execute Lean compiler
-    exec(`lean "${filePath}"`, (error, stdout, stderr) => {
-      const outputLog = stdout + (stderr ? '\n' + stderr : '');
-      const isValid = !error; // Assuming exit code 0 means success
-
-      // Clean up temp file
-      try { fs.unlinkSync(filePath); } catch (e) { }
-
-      // Update theorems and insert proof
-      let newStatus = isValid ? (isDisproofAttempt ? 'disproved' : 'proved') : 'unproved';
-      let isCompilerMissing = error && (error.message.includes('not found') || error.message.includes('not recognized'));
-
-      if (isCompilerMissing || !isValid) {
-        newStatus = theorem.status; // remain unchanged if invalid or missing compiler
-      }
-
-      db.run('INSERT INTO proofs (theorem_id, user_id, content, is_valid, output_log) VALUES (?, ?, ?, ?, ?)',
-        [id, user_id, content, isValid, outputLog || (error ? error.message : '')],
-        function (errIn) {
-          if (errIn) return res.status(500).json({ error: errIn.message });
-          const proofId = this.lastID;
-
-          if (isValid && !isCompilerMissing) {
-            db.run('UPDATE theorems SET status = ? WHERE id = ?', [newStatus, id], (errUp) => {
-              // Award points if we have a user
-              if (user_id) {
-                db.run('UPDATE users SET points = points + 10 WHERE id = ?', [user_id]);
-              }
-
-              // Generate notifications if status changed to proved or disproved
-              if (newStatus === 'proved' || newStatus === 'disproved') {
-                const message = `Theorem "${theorem.name}" was recently ${newStatus}!`;
-                const link_url = `/theorem/${id}`;
-
-                // Find all users who bookmarked this theorem
-                db.all('SELECT user_id FROM bookmarks WHERE theorem_id = ?', [id], (errBk, rows) => {
-                  if (!errBk && rows && rows.length > 0) {
-                    const stmt = db.prepare('INSERT INTO notifications (user_id, message, link_url) VALUES (?, ?, ?)');
-                    rows.forEach(row => {
-                      // Don't notify the person who just proved it if they had it bookmarked
-                      if (row.user_id !== user_id) {
-                        stmt.run([row.user_id, message, link_url]);
-                      }
-                    });
-                    stmt.finalize();
-                  }
-                });
-              }
-
-              res.status(200).json({
-                success: true,
-                proof: { id: proofId, is_valid: isValid, output_log: outputLog || (error ? error.message : '') },
-                compiler_missing: isCompilerMissing
-              });
-            });
-          } else if (isCompilerMissing) {
-            res.status(200).json({
-              success: true,
-              proof: { id: proofId, is_valid: isValid, output_log: outputLog || (error ? error.message : '') },
-              compiler_missing: isCompilerMissing
-            });
-          } else {
-            res.status(200).json({
-              success: true,
-              proof: { id: proofId, is_valid: isValid, output_log: outputLog || error.message },
-              compiler_missing: false
-            });
-          }
-        });
-    });
+        if (isValid && !isCompilerMissing) {
+          db.run('UPDATE theorems SET status = ? WHERE id = ?', [newStatus, id], (errUp) => {
+            notifySubscribersAndAwardPoints(user_id, id, theorem.name, newStatus);
+            res.status(200).json(responsePayload);
+          });
+        } else {
+          res.status(200).json(responsePayload);
+        }
+      });
   });
-});
+};
+
+// --- Routes Definition ---
+
+router.get('/', getAllTheorems);
+router.get('/search', searchTheorems);
+router.get('/:id', getTheoremById);
+router.post('/', auth, submissionLimiter, createTheorem);
+router.post('/:id/regenerate-description', auth, regenerateDescription);
+router.post('/:id/toggle-problem', auth, toggleTheoremProblem);
+router.post('/:id/re-evaluate-submissions', auth, reEvaluateSubmissions);
+router.post('/:id/prove', auth, submissionLimiter, submitProof);
 
 module.exports = router;

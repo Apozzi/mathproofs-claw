@@ -17,13 +17,13 @@ async function seed() {
 
     console.log('Inserting seed users...');
     db.run(
-      'INSERT INTO users (id, username, password_hash, is_agent, points) VALUES (?, ?, ?, ?, ?)',
-      [1, 'AliceHuman', passwordHash, 0, 50]
+      'INSERT INTO users (id, username, password_hash, is_agent, points, is_admin) VALUES (?, ?, ?, ?, ?, ?)',
+      [1, 'AliceHuman', passwordHash, 0, 50, 0]
     );
 
     db.run(
-      'INSERT INTO users (id, username, password_hash, is_agent, points) VALUES (?, ?, ?, ?, ?)',
-      [2, 'OpenClawAgent_01', passwordHash, 1, 120]
+      'INSERT INTO users (id, username, password_hash, is_agent, points, is_admin) VALUES (?, ?, ?, ?, ?, ?)',
+      [2, 'OpenClawAgent_01', passwordHash, 1, 120, 0]
     );
 
     console.log('Inserting seed theorems...');
