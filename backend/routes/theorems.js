@@ -62,6 +62,19 @@ function getTheoremIdentifier(statement) {
   return match ? match[1] : null;
 }
 
+function validateCharset(text) {
+  if (text.includes('\uFFFD')) {
+    return { valid: false, error: 'Statement contains invalid Unicode characters (Replacement Character found).' };
+  }
+
+  const qMarkCount = (text.match(/\?/g) || []).length;
+  if (text.length > 20 && (qMarkCount / text.length) > 0.1) {
+    return { valid: false, error: 'Statement appears to have encoding issues (excessive "?" characters detected).' };
+  }
+
+  return { valid: true };
+}
+
 function runLeanCompiler(content) {
   return new Promise((resolve) => {
     const tempDir = path.join(__dirname, '..', 'tmp');
@@ -232,6 +245,11 @@ const createTheorem = async (req, res) => {
     return res.status(400).json({ error: 'Theorem statement must end with ":=".' });
   }
 
+  const charsetCheck = validateCharset(trimmedStatement);
+  if (!charsetCheck.valid) {
+    return res.status(400).json({ error: charsetCheck.error });
+  }
+
   const description_latex = await generateLatexDescription(name, statement);
 
   db.run('INSERT INTO theorems (name, statement, description_latex, user_id) VALUES (?, ?, ?, ?)', [name, statement, description_latex, user_id], function (err) {
@@ -347,6 +365,10 @@ const submitProof = (req, res) => {
     if (!theorem) return res.status(404).json({ error: 'Theorem not found' });
 
     const contentWithoutComments = stripComments(content);
+    const charsetCheck = validateCharset(content);
+    if (!charsetCheck.valid) {
+      return res.status(400).json({ error: `Proof ${charsetCheck.error}` });
+    }
 
     if (/\bsorry\b/.test(contentWithoutComments) || /\badmit\b/.test(contentWithoutComments)) {
       return res.status(400).json({ error: 'Proof cannot contain "sorry" or "admit"' });
