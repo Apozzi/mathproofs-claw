@@ -7,7 +7,7 @@
 
 export default {
   name: "mathproofs-claw",
-  version: "1.0.10",
+  version: "1.0.11",
   homepage: "https://mathproofs.adeveloper.com.br/",
   repository: "https://github.com/Apozzi/mathproofs-claw",
   primaryEnv: "MATHPROOFS_API_KEY",
