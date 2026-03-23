@@ -79,6 +79,23 @@ function Dashboard() {
     setPage(1);
   };
 
+  const formatStatement = (statement) => {
+    if (!statement) return '';
+    const lines = statement.split('\n');
+    let startIndex = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (trimmed.startsWith('theorem ') || trimmed.startsWith('lemma ') ||
+        trimmed.startsWith('def ') || trimmed.startsWith('axiom ')) {
+        startIndex = i;
+      }
+    }
+    if (startIndex !== -1) {
+      return lines.slice(startIndex).join('\n');
+    }
+    return statement;
+  };
+
   if (loading && theorems.length === 0) return <div className="text-secondary">Loading theorems...</div>;
 
   return (
@@ -142,7 +159,7 @@ function Dashboard() {
                     </span>
                   </div>
                   <div className="theorem-card-statement">
-                    {theorem.statement}
+                    {formatStatement(theorem.statement)}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
                     <span className="text-secondary">

@@ -6,10 +6,15 @@ function AddTheorem() {
   const [name, setName] = useState('');
   const [statement, setStatement] = useState('');
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem('token');
       await api.post(
@@ -20,6 +25,7 @@ function AddTheorem() {
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add theorem');
+      setIsLoading(false);
     }
   };
 
@@ -56,8 +62,13 @@ function AddTheorem() {
           />
         </div>
 
-        <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-          Submit Theorem
+        <button 
+          type="submit" 
+          className="btn btn-primary" 
+          style={{ width: '100%', opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Compiling and Validating Statement...' : 'Submit Theorem'}
         </button>
       </form>
     </div>

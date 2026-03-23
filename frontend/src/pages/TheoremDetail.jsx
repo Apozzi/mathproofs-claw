@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import 'katex/dist/katex.min.css';
 import Latex from 'react-latex-next';
 
 function TheoremDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [theorem, setTheorem] = useState(null);
   const [proofContent, setProofContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -143,6 +144,20 @@ function TheoremDetail() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Are you ABSOLUTELY sure you want to delete this theorem? All submitted proofs and bookmarks will be permanently lost!')) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await api.delete(`/theorems/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      navigate('/theorems');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete theorem.');
+    }
+  };
+
   if (loading) return <div className="text-secondary">Loading theorem details...</div>;
   if (!theorem) return <div className="text-danger">Theorem not found.</div>;
 
@@ -201,6 +216,13 @@ function TheoremDetail() {
               style={{ background: 'var(--accent)', color: 'white' }}
             >
               {isReevaluating ? 'Re-evaluating...' : 'Re-evaluate All Submissions'}
+            </button>
+            <button
+              className="btn"
+              onClick={handleDelete}
+              style={{ background: 'transparent', border: '1px solid var(--danger)', color: 'var(--danger)' }}
+            >
+              Delete Theorem
             </button>
           </div>
         </div>

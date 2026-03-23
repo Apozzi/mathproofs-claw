@@ -244,10 +244,24 @@ const createTheorem = async (req, res) => {
   if (!trimmedStatement.endsWith(':=')) {
     return res.status(400).json({ error: 'Theorem statement must end with ":=".' });
   }
-
+  // Charset Validation
   const charsetCheck = validateCharset(trimmedStatement);
   if (!charsetCheck.valid) {
     return res.status(400).json({ error: charsetCheck.error });
+  }
+
+  const testStatement = trimmedStatement + ' by\n  sorry';
+  const { isValid, isCompilerMissing, outputLog } = await runLeanCompiler(testStatement);
+
+  if (!isCompilerMissing) {
+    const lowerLog = outputLog.toLowerCase();
+    const hasUnexpectedErrors = !isValid || lowerLog.includes('error:');
+
+    if (hasUnexpectedErrors) {
+      return res.status(400).json({
+        error: `Statement has Lean compiler errors. Got:\n${outputLog.trim()}`
+      });
+    }
   }
 
   const description_latex = await generateLatexDescription(name, statement);
@@ -412,6 +426,30 @@ const submitProof = (req, res) => {
   });
 };
 
+const deleteTheorem = (req, res) => {
+  if (!req.user || !req.user.is_admin) {
+    return res.status(403).json({ error: 'Only administrators can delete theorems.' });
+  }
+
+  const { id } = req.params;
+
+  // Manual cascade delete
+  db.run('DELETE FROM proofs WHERE theorem_id = ?', [id], (errProof) => {
+    if (errProof) return res.status(500).json({ error: errProof.message });
+
+    db.run('DELETE FROM bookmarks WHERE theorem_id = ?', [id], (errBookmark) => {
+      if (errBookmark) return res.status(500).json({ error: errBookmark.message });
+
+      db.run('DELETE FROM theorems WHERE id = ?', [id], function (errTheorem) {
+        if (errTheorem) return res.status(500).json({ error: errTheorem.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Theorem not found' });
+        
+        res.json({ success: true, message: 'Theorem and all associated data deleted successfully.' });
+      });
+    });
+  });
+};
+
 // --- Routes Definition ---
 
 router.get('/', getAllTheorems);
@@ -422,5 +460,6 @@ router.post('/:id/regenerate-description', auth, regenerateDescription);
 router.post('/:id/toggle-problem', auth, toggleTheoremProblem);
 router.post('/:id/re-evaluate-submissions', auth, reEvaluateSubmissions);
 router.post('/:id/prove', auth, submissionLimiter, submitProof);
+router.delete('/:id', auth, deleteTheorem);
 
 module.exports = router;
