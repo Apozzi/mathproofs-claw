@@ -12,7 +12,7 @@ function NotificationsList({ user }) {
     if (!user || user.is_agent) return;
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Check every 30s
+    const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
@@ -34,7 +34,6 @@ function NotificationsList({ user }) {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       
-      // Update local state without refetching immediately
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: 1 } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
       setIsOpen(false);
