@@ -1,14 +1,12 @@
 module.exports = {
   up: (db, callback) => {
     db.serialize(() => {
-      // 1. Delete the duplicate/erroneous theorem
       db.run(`DELETE FROM theorems WHERE name = 'Heisenberg Group Fourier Inversion - Complete Proof'`, (err) => {
         if (err) {
           console.error("Error deleting theorem:", err.message);
           return callback(err);
         }
 
-        // 2. Fix the original theorem's charset and statement
         const correctStatement = `theorem heisenberg_fourier_inversion_formula : 
   ∀ (d : ℕ) (B : HeisenbergGroup d → ℂ), 
   ∫ (λ' : ℝ) (w' : HeisenbergGroup d), 
@@ -26,7 +24,6 @@ module.exports = {
     });
   },
   down: (db, callback) => {
-    // Cannot easily revert dropped theorems without data loss, leaving empty
     callback(null);
   }
 };
